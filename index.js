@@ -276,7 +276,6 @@ MongoClient.connect(mongoUri, function(error, db) {
 
         if (!isServer) {
           process.stdout.write('Exiting. (1)\n');
-          client.captureException('Exiting at location 1.');
           process.exit();
         }
       }).catch(function(error) {
@@ -380,7 +379,6 @@ MongoClient.connect(mongoUri, function(error, db) {
 
         if (!isServer) {
           process.stdout.write('Exiting. (2)\n');
-          client.captureException('Exiting at location 2.');
           process.exit();
         }
       }).catch(function(error) {

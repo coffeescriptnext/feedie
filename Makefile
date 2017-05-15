@@ -1,5 +1,5 @@
 deploy:
-	@git push dokku
+	@git push heroku
 
 feeds:
 	@node --harmony index crawl-all
