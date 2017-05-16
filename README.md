@@ -25,5 +25,9 @@ on cron.
 Deploy
 ------
 
-1. `git remote add dokku dokku@<your-dokku-server>:feedie`
-2. `git push dokku`
+1. `heroku create`
+2. `heroku config:set MONGODB_URI='...'`
+3. `heroku config:set SENTRY_ID='...'`
+4. `heroku config:set SENTRY_KEY='...'`
+5. `heroku config:set SENTRY_PASS='...'`
+6. `heroku config:set FEEDIE_KEY='...'`

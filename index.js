@@ -14,13 +14,18 @@ const raven = require('raven');
 const request = require('request');
 const sanitizeHtml = require('sanitize-html');
 
-const sentry = new raven.Client('https://<key>:<key>@app.getsentry.com/<id>');
-sentry.patchGlobal();
-
 const hostname = os.hostname();
 const isProd = hostname !== 'pro.local';
 
 const adminUrl = isProd ? 'http://siftie.com/admin/feeds/' : 'http://localhost:3000/admin/feeds/';
+
+const sentryId = process.env.SENTRY_ID;
+const sentryKey = process.env.SENTRY_KEY;
+const sentryPass = process.env.SENTRY_PASS;
+
+const sentry = new raven.Client(`https://${sentryKey}:${sentryPass}@app.getsentry.com/${sentryId}`);
+
+sentry.patchGlobal();
 
 process.on('uncaughtException', (err) => {
   process.stderr.write(`Caught exception: ${err}`);
@@ -38,7 +43,7 @@ let isServer;
 let mongoUri;
 
 if (isProd) {
-  mongoUri = 'mongodb://siftie_primary:<key>@candidate.61.mongolayer.com:<port>,candidate.62.mongolayer.com:<port>/siftie';
+  mongoUri = process.env.MONGODB_URI;
 } else {
   mongoUri = 'mongodb://localhost:3001/meteor';
 }
@@ -396,7 +401,7 @@ MongoClient.connect(mongoUri, function(error, db) {
 
         const urlParts = request.url.split('/');
 
-        if (urlParts[1] !== '<feed-key>') {
+        if (urlParts[1] !== process.env.FEEDIE_KEY) {
           response.end('');
           return;
         }
