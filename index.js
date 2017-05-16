@@ -31,10 +31,6 @@ process.on('uncaughtException', (err) => {
   process.stderr.write(`Caught exception: ${err}`);
 });
 
-process.on('exit', (err) => {
-  process.stderr.write(`Caught exit: ${err}`);
-});
-
 process.on('SIGINT', (err) => {
   process.stderr.write(`Caught SIGINT: ${err}`);
 });
@@ -279,7 +275,6 @@ MongoClient.connect(mongoUri, function(error, db) {
         process.stdout.write('Done with feeds.\n');
 
         if (!isServer) {
-          process.stdout.write('Exiting. (1)\n');
           process.exit();
         }
       }).catch(function(error) {
