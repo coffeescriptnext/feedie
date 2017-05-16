@@ -5,6 +5,6 @@ feeds:
 	@node --harmony index crawl-all
 
 prune:
-	@node --harmony prune
+	@node --harmony index prune
 
 .PHONY: deploy feeds prune

@@ -165,7 +165,6 @@ MongoClient.connect(mongoUri, function(error, db) {
             { $unset: { error: "" }},
             function(err, feed) {});
         feedItemsForFeed(feedResult.feed._id).then(function(feedItems) {
-
           const items = feedResult.items.map(function(item) {
             item.potentialHashes = [
               md5(feedResult.feed._id + item.link),
@@ -218,7 +217,7 @@ MongoClient.connect(mongoUri, function(error, db) {
                 process.stdout.write(itemsErr + '\n');
                 return reject(itemsErr);
               }
-              if (!rawItems.length) return resolve();
+              if (!rawItems.insertedCount) return resolve();
               process.stdout.write('Done with items.\n');
               process.stdout.write('Inserting feedItems.\n');
               db.collection('feedItems').update({ _id: feedResult.feed._id },
