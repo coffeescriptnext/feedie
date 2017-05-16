@@ -163,8 +163,8 @@ MongoClient.connect(mongoUri, function(error, db) {
         feedItemsForFeed(feedResult.feed._id).then(function(feedItems) {
           const items = feedResult.items.map(function(item) {
             item.potentialHashes = [
-              md5(feedResult.feed._id + item.link),
-              md5(feedResult.feed._id + item.title)
+              md5(feedResult.feed._id + item.link)
+              // md5(feedResult.feed._id + item.title)
             ];
             return item;
           });
