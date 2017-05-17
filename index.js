@@ -101,8 +101,10 @@ MongoClient.connect(mongoUri, function(error, db) {
                 }, function (e, response, buffer) {
                   let badFileType = false;
                   let size = {};
+
                   try {
                     size = imageSize(buffer);
+                    buffer = null;
                   } catch (e) {
                     badFileType = true;
                   }
