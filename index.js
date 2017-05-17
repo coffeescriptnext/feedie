@@ -79,68 +79,62 @@ MongoClient.connect(mongoUri, function(error, db) {
           resolve(feeds);
         });
     });
-    // const processImages = function(item) {
-    //   process.stdout.write('- Processing images for ' + item.link + '.\n');
-    //   return new Promise(function(resolveProcessImages, rejectProcessImages) {
-    //     if (!item.description) return resolveProcessImages();
-    //     jsdom.env(item.description, ['http://code.jquery.com/jquery.js'], function (e, window) {
-    //       const $ = window.$;
-    //       const imagePromises = [];
+    const processImages = function(item) {
+      process.stdout.write('- Processing images for ' + item.link + '.\n');
+      return new Promise(function(resolveProcessImages, rejectProcessImages) {
+        if (!item.description) return resolveProcessImages();
+        jsdom.env(item.description, ['http://code.jquery.com/jquery.js'], function (e, window) {
+          const $ = window.$;
+          const imagePromises = [];
 
-    //       if ($) {
-    //         const images = $('img');
+          if ($) {
+            const images = $('img');
 
-    //         $.each(images, function(index) {
+            $.each(images, function(index) {
+              const img = images.eq(index);
+              const imgUrl = img.attr('src');
 
-    //           const img = images.eq(index);
-    //           const imgUrl = img.attr('src');
+              imagePromises.push(new Promise(function(resolveImage, rejectImage) {
+                request.get({
+                    url: imgUrl,
+                    encoding: null
+                }, function (e, response, buffer) {
+                  let badFileType = false;
+                  let size = {};
+                  try {
+                    size = imageSize(buffer);
+                  } catch (e) {
+                    badFileType = true;
+                  }
 
-    //           imagePromises.push(new Promise(function(resolveImage, rejectImage) {
+                  if (size.width < 250 || badFileType) {
+                    $('img[src="' + imgUrl + '"]').remove();
+                  } else if (size.width >= 500 && !item.featuredImage) {
+                    $('img[src="' + imgUrl + '"]').remove();
+                    item.featuredImage = imgUrl;
+                  } else {
+                    item.images = item.images || [];
+                    item.images.push(imgUrl);
+                    $('img[src="' + imgUrl + '"]').wrap('<div class="img-container">');
+                  }
+                  resolveImage();
+                });
+              }));
+            });
+          }
 
-    //             request.get({
-    //                 url: imgUrl,
-    //                 encoding: null
-    //             }, function (e, response, buffer) {
-
-    //               let badFileType = false;
-    //               let size = {};
-    //               try {
-    //                 size = imageSize(buffer);
-    //               } catch (e) {
-    //                 badFileType = true;
-    //               }
-
-    //               if (size.width < 250 || badFileType) {
-    //                 $('img[src="' + imgUrl + '"]').remove();
-    //               } else if (size.width >= 500 && !item.featuredImage) {
-    //                 $('img[src="' + imgUrl + '"]').remove();
-    //                 item.featuredImage = imgUrl;
-    //               } else {
-    //                 item.images = item.images || [];
-    //                 item.images.push(imgUrl);
-    //                 $('img[src="' + imgUrl + '"]').wrap('<div class="img-container">');
-    //               }
-
-    //               resolveImage();
-    //             });
-
-
-    //           }));
-    //         });
-    //       }
-
-    //       Promise.all(imagePromises).then(function() {
-    //         if ($) {
-    //           item.description = $('body').html();
-    //         } else {
-    //           item.description = '';
-    //         }
-    //         process.stdout.write('- Done with images for ' + item.link + '.\n');
-    //         resolveProcessImages();
-    //       });
-    //     });
-    //   });
-    // };
+          Promise.all(imagePromises).then(function() {
+            if ($) {
+              item.description = $('body').html();
+            } else {
+              item.description = '';
+            }
+            process.stdout.write('- Done with images for ' + item.link + '.\n');
+            resolveProcessImages();
+          });
+        });
+      });
+    };
     const updateFeedError = function(feedResult) {
       return new Promise(function(resolve, reject) {
         db.collection('feeds')
@@ -198,7 +192,7 @@ MongoClient.connect(mongoUri, function(error, db) {
               }) : null
             };
 
-            // imagePromises.push(processImages(newItem));
+            imagePromises.push(processImages(newItem));
 
             return newItem;
           });
@@ -206,7 +200,7 @@ MongoClient.connect(mongoUri, function(error, db) {
           if (!newItems.length) return resolve();
 
           Promise.all(imagePromises).then(function() {
-            // process.stdout.write('Done with images.\n');
+            process.stdout.write('Done with images.\n');
             process.stdout.write('Inserting items.\n');
             db.collection('items').insert(newItems, function(itemsErr, rawItems) {
               if (itemsErr) {
